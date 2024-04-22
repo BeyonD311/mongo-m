@@ -23,7 +23,7 @@ def get_read_me():
         return DESCRIPTION
 
 setup(
-    name='mongo_migrate',
+    name='mongo-m',
     version='1.0.0',
     description=DESCRIPTION,
     long_description=get_read_me(),
@@ -31,21 +31,29 @@ setup(
     author='Dankov Sergey',
     author_email='beyond31@mail.ru',
     license='GNU General Public License v3 (GPLv3)',
-    package_dir={"": "src"},
-    packages=find_packages(
-        where='src',
-    ),
+    url='https://github.com/BeyonD311/mongo_migrate',
+    packages=find_packages(),
     include_package_data=True,
     platforms='any',
     zip_safe=False,
     install_requires=install_requires,
     classifiers=[
-        'Development Status :: Beta',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Environment :: Console',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ]
 )

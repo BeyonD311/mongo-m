@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from src.mongo_migrate.core import check_catalog, create_catalog
+from mongo_m.core import check_catalog, create_catalog
 
 __all__ = ["create_migration_catalog"]
 

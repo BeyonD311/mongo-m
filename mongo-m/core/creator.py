@@ -3,9 +3,6 @@
 """
 
 import os
-import shutil
-import sys
-
 
 __all__ = ["check_catalog", "create_catalog"]
 

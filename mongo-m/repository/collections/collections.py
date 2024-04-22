@@ -12,7 +12,7 @@ def find_collections(client: MongoClient, db_name: str) -> Database:
     return db
 
 
-async def get_fields_collections(db: Database) -> list[Schema]:
+def get_fields_collections(db: Database) -> list[Schema]:
     fields_result = []
     query_field = get_fields()
     for collection_name in db.list_collection_names():
@@ -25,7 +25,7 @@ async def get_fields_collections(db: Database) -> list[Schema]:
 
 
 
-async def get_fields_info(collection: Collection, fields: list[SchemaField]) -> list[SchemaField]:
+def get_fields_info(collection: Collection, fields: list[SchemaField]) -> list[SchemaField]:
     pipeline = [{"$project": {f.name: {"$type": "$" + f.name}}} for f in fields]
     if len(pipeline) == 0:
         return []

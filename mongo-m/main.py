@@ -16,7 +16,7 @@ load_dotenv()
 PATH = Path(__file__).parent.resolve()
 
 
-async def connect_to_mongo() -> pymongo.MongoClient:
+def connect_to_mongo() -> pymongo.MongoClient:
     """
     Connects to a MongoDB database using environment variables for configuration.
 
@@ -31,7 +31,7 @@ async def connect_to_mongo() -> pymongo.MongoClient:
     return MongoDB(host, int(port), user, pwd)
 
 
-async def main():
+def main():
     '''
     path = Path(f"{os.getcwd()}/../db_schemas_text.py")
     p = util.spec_from_file_location("read", path)
@@ -60,6 +60,3 @@ async def main():
     #     db.get_collection("customer_request").update_many(
     #         query, update_fields
     #     )
-
-if __name__ == "__main__":
-    asyncio.run(main())
