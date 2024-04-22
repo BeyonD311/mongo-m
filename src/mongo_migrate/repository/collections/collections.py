@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from pymongo.database import Database, Collection
 from .models import SchemaField, Schema
+from .query import get_fields
 from pprint import pformat
 
 __all__ = ["find_collections", "get_fields_collections"]
@@ -13,20 +14,15 @@ def find_collections(client: MongoClient, db_name: str) -> Database:
 
 async def get_fields_collections(db: Database) -> list[Schema]:
     fields_result = []
-    tasks = []
+    query_field = get_fields()
     for collection_name in db.list_collection_names():
         collection = db.get_collection(collection_name)
-        batches = collection.aggregate([
-            {"$project": {"fields": {"$objectToArray": "$$ROOT"}}},
-            {"$unwind": "$fields"},
-            {"$group": {"_id": None, "fields": {"$addToSet": "$fields.k"}}}
-        ])
+        batches = list(collection.aggregate(query_field))
         collection_data = Schema(name=collection_name)
-        [collection_data.fields.append(SchemaField(name=name)) for name in next(batches)["fields"]]
+        [collection_data.fields.append(SchemaField(name=batch['field'], type=batch['type'])) for batch in batches]
         fields_result.append(collection_data)
-        await get_fields_info(collection, collection_data.fields)
-
     return fields_result
+
 
 
 async def get_fields_info(collection: Collection, fields: list[SchemaField]) -> list[SchemaField]:

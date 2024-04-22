@@ -1,3 +1,2 @@
 from .mongodb import MongoDB
-
-__all__ = ["MongoDB"]
+from .creator import *
