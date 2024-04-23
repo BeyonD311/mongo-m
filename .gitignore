@@ -1,3 +1,7 @@
 venv
 .idea
 .env
+mongo_m.egg-info
+dist
+build
+__pycache__

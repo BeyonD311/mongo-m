@@ -23,7 +23,7 @@ def get_read_me():
         return DESCRIPTION
 
 setup(
-    name='mongo-m',
+    name='mongo_m',
     version='1.0.0',
     description=DESCRIPTION,
     long_description=get_read_me(),
