@@ -1,47 +1,64 @@
-import asyncio
-import inspect
-import os, sys, importlib
-import re
-from importlib import util
-from pprint import pformat
+import sys, asyncio
 from dotenv import load_dotenv
-import pymongo
-import pymongo.database as mongo_db
 from pathlib import Path
-from .repository import collections
-from types import UnionType
-from .core import get_default_value, create_file_ini, get_config
-from .services.migration import create_migration_catalog, make_migration, update_migration_file, connect_to_mongo
+from .core import create_file_ini, get_config
+from .repository.collections.models import Query
+from .services.migration import (
+    FileMigration, get_collections, connect_to_mongo, get_database,
+    add_fields, delete_fields
+)
 
 load_dotenv()
 PATH = Path(__file__).parent.resolve()
 
 
-def create_migration():
-    db_name = os.getenv("MONGO_DB")
-    client = connect_to_mongo()
-    db = collections.find_collections(client, db_name)
-    db_collections = collections.get_fields_collections(db)
-    print(db_collections)
+async def update_migration(client):
+    collections_migration = FileMigration.get_migration()
+    db = get_database(client)
+    for collection in get_collections(client):
+        if collection.name in collections_migration:
+            fields = set(collections_migration[collection.name].keys())
+            #Симметрическая разность множеств
+            disjunctive = fields ^ collection.fields
+            if "_id" in disjunctive:
+                disjunctive.remove("_id")
+            delete = Query()
+            add = Query()
+            for field in disjunctive:
+                if field in fields:
+                    add.query.append({field: {"$exists": False}})
+                    add.fields[field] = collections_migration[collection.name][field]
+                    add.empty = False
+                if field not in fields and collection.fields:
+                    delete.query.append({field: {"$exists": True}})
+                    delete.fields[field] = ""
+                    delete.empty = False
+            add_fields(db, collection.name, add)
+            delete_fields(db, collection.name, delete)
 
-async def update_migration():
-    connect_to_mongo()
 
-async def create_migration(module_path):
-    migration_file = await make_migration(module_path)
-    update_migration_file(migration_file)
+async def create_migration():
+    config = get_config()
+    module_path = config.get("MONGO", "module_path")
+    migration_file = await FileMigration.make_migration(module_path)
+    FileMigration.update_migration_file(migration_file)
+
 
 async def main():
-    create_migration_catalog()
+    FileMigration.create_migration_catalog()
+    client = connect_to_mongo()
     params = tuple(sys.argv[1:])
-    module_path = "app/src/app/schemes"
+    # module_path = "app/src/app/schemes"
     # module_path = "utils/schemas/db_schemas_q_service"
-    if params[0] == "--create-migration":
-        await create_migration(module_path)
-    elif params[0] == "--update-migration":
-        await update_migration()
-    elif params[0] == "--init":
-        create_file_ini()
+    try:
+        if params[0] == "--create-migration":
+            await create_migration()
+        elif params[0] == "--update-migration":
+            await update_migration(client)
+        elif params[0] == "--init":
+            create_file_ini()
+    finally:
+        client.close()
     # for collection in db_collections:
     #     if collection.name == "text_queue":
     #         for field in collection.fields:

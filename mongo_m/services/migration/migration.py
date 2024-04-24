@@ -1,56 +1,10 @@
-import os, sys, json, hashlib, pymongo
-from pathlib import Path
-from mongo_m.core import check_catalog, create_catalog, MongoDB, get_config
-from mongo_m.core.inspect_module import make_module, inspect_module
-from pprint import pformat, pprint
-from datetime import datetime
+import pymongo, logging
+from pymongo.database import Database
+from mongo_m.core import MongoDB, get_config
+from mongo_m.repository import collections
 
-__all__ = ["create_migration_catalog", "make_migration", "update_migration_file", 'connect_to_mongo']
+__all__ = ['connect_to_mongo', 'get_collections', 'get_database', 'delete_fields', 'add_fields']
 
-PATH = Path(f"{os.getcwd()}/migration")
-
-def create_migration_catalog():
-    if not check_catalog(PATH.name):
-        create_catalog(PATH.name)
-
-
-async def make_migration(module_path: str):
-    modules = []
-    async for module in make_module(module_path):
-        module = inspect_module(module)
-        if module != {}:
-            modules.append(module)
-    modules = json.dumps(modules, indent=4)
-    hash_name = hashlib.md5(modules.encode())
-    file_name = f"{hash_name.hexdigest()}.json"
-    with open(file=f"{PATH.name}/{file_name}", mode='w') as f:
-        f.write(modules)
-    return file_name
-
-def update_migration_file(file_migration: str):
-    """
-    Обновляет стек выполненых миграций
-    """
-    file_name = f"{PATH.name}/update.json"
-
-    try:
-        with open(file=file_name, mode="r+") as f:
-            file_data = f.read()
-            items = json.loads(file_data)
-
-            if len(items) == 0:
-                items.append(file_migration)
-            elif file_migration != items[-1]:
-                items.append(file_migration)
-
-            f.truncate(0)
-            f.seek(0)
-            f.write(json.dumps(items, indent=4))
-            f.seekable()
-
-    except FileNotFoundError:
-        with open(file=file_name, mode="w") as f:
-            f.write(json.dumps([file_migration], indent=4))
 
 def connect_to_mongo() -> pymongo.MongoClient:
     """
@@ -61,14 +15,38 @@ def connect_to_mongo() -> pymongo.MongoClient:
     """
     config = get_config()
     return MongoDB(config.get("MONGO", "host"),
-                   config.get("MONGO", "port"),
+                   int(config.get("MONGO", "port")),
                    config.get("MONGO", "user"),
                    config.get("MONGO", "password"))
 
-def get_collection() -> pymongo.collection.Collection:
+
+def get_collections(client: pymongo.MongoClient):
+    db = get_database(client)
+    return collections.get_fields_collections(db)
+
+
+def get_database(client: pymongo.MongoClient):
     config = get_config()
-    db_name = os.getenv("MONGO_DB")
-    client = connect_to_mongo()
+    db_name = config.get("MONGO", "database")
     db = collections.find_collections(client, db_name)
-    db_collections = collections.get_fields_collections(db)
-    print(db_collections)
+    return db
+
+
+def delete_fields(db: Database, collection_name: str, params):
+    if params.empty:
+        return
+    collections = db.get_collection(collection_name)
+    try:
+        collections.update_many({"$or": params.query}, {"$unset": params.fields}, upsert=True)
+    except Exception as e:
+        print(e)
+
+
+def add_fields(db: Database, collection_name: str, params):
+    if params.empty:
+        return
+    collections = db.get_collection(collection_name)
+    try:
+        collections.update_many({"$or": params.query}, {"$set": params.fields}, upsert=True)
+    except Exception as e:
+        print(e)

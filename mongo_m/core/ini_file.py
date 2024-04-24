@@ -11,7 +11,8 @@ def create_file_ini():
         'port': 27020,
         'user': 'devUser',
         'password': 'nbgfre736251',
-        'database': 'queue_service'
+        'database': 'queue_service',
+        'module_path': 'migration'
     }
     with open(FILE, 'w') as f:
         config.write(f)
