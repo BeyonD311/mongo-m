@@ -1,4 +1,5 @@
-import sys, asyncio
+import sys
+import asyncio
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from pathlib import Path
@@ -62,7 +63,7 @@ async def main():
     except Exception as e:
         print(e)
     finally:
-        if client != None:
+        if client is not None:
             client.close()
 
 if __name__ == "__main__":

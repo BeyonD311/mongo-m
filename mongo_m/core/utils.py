@@ -21,4 +21,3 @@ def get_default_value(typing: str):
         if typing.find(type_key) != -1:
             return types[type_key]
     return None
-

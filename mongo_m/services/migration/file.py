@@ -1,4 +1,6 @@
-import os, json, hashlib
+import os
+import json
+import hashlib
 from pathlib import Path
 from mongo_m.core.inspect_module import make_module, inspect_module
 from mongo_m.core import check_catalog, create_catalog
