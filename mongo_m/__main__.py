@@ -1,40 +1,35 @@
 import sys, asyncio
+from pymongo import MongoClient
 from dotenv import load_dotenv
 from pathlib import Path
 from .core import create_file_ini, get_config
-from .repository.collections.models import Query
 from .services.migration import (
-    FileMigration, get_collections, connect_to_mongo, get_database,
-    add_fields, delete_fields
+    FileMigration, connect_to_mongo,
+    add_fields, delete_fields,
+    screening_fields,
+    get_database
 )
 
 load_dotenv()
 PATH = Path(__file__).parent.resolve()
 
 
-async def update_migration(client):
-    collections_migration = FileMigration.get_migration()
+def update_migration(client: MongoClient, type_action: bool):
+    """
+    Выполнение миграции
+    :param client:
+    :type client:
+    :param type_action: bool True добавление полей False удаление
+    :type type_action:
+    :return:
+    :rtype:
+    """
     db = get_database(client)
-    for collection in get_collections(client):
-        if collection.name in collections_migration:
-            fields = set(collections_migration[collection.name].keys())
-            #Симметрическая разность множеств
-            disjunctive = fields ^ collection.fields
-            if "_id" in disjunctive:
-                disjunctive.remove("_id")
-            delete = Query()
-            add = Query()
-            for field in disjunctive:
-                if field in fields:
-                    add.query.append({field: {"$exists": False}})
-                    add.fields[field] = collections_migration[collection.name][field]
-                    add.empty = False
-                if field not in fields and collection.fields:
-                    delete.query.append({field: {"$exists": True}})
-                    delete.fields[field] = ""
-                    delete.empty = False
-            add_fields(db, collection.name, add)
-            delete_fields(db, collection.name, delete)
+    for collection_name, add, delete in screening_fields(client):
+        if type_action:
+            add_fields(db, collection_name, add)
+        else:
+            delete_fields(db, collection_name, delete)
 
 
 async def create_migration():
@@ -49,12 +44,20 @@ async def main():
     params = tuple(sys.argv[1:])
     client = None
     try:
-        if params[0] == "--create-migration":
+        if params[0] == "create-migration":
             await create_migration()
-        elif params[0] == "--update-migration":
+        elif params[0] == "update-migration":
             client = connect_to_mongo()
-            await update_migration(client)
-        elif params[0] == "--init":
+            action = None
+
+            if params[1] == '-a':
+                action = True
+            elif params[1] == '-d':
+                action = False
+
+            if action is not None:
+                update_migration(client, action)
+        elif params[0] == "init":
             create_file_ini()
     except Exception as e:
         print(e)
