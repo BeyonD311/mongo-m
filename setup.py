@@ -24,14 +24,14 @@ def get_read_me():
 
 setup(
     name='mongo_m',
-    version='1.0.0',
+    version='1.1.2',
     description=DESCRIPTION,
     long_description=get_read_me(),
     long_description_content_type="text/markdown",
     author='Dankov Sergey',
     author_email='beyond31@mail.ru',
     license='GNU General Public License v3 (GPLv3)',
-    url='https://github.com/BeyonD311/mongo_migrate',
+    url='https://github.com/BeyonD311/mongo-m',
     packages=find_packages(),
     include_package_data=True,
     platforms='any',

@@ -18,12 +18,15 @@ class FileMigration:
 
     @classmethod
     async def make_migration(cls, module_path: str):
-        modules = []
+        modules = {}
         async for module in make_module(module_path):
             module = inspect_module(module)
             if module != {}:
-                modules.append(module)
-        modules = json.dumps(modules, indent=4)
+                for name, value in module.items():
+                    modules[name] = {
+                        name: value,
+                    }
+        modules = json.dumps(list(modules.values()), indent=4)
         hash_name = hashlib.md5(modules.encode())
         file_name = f"{hash_name.hexdigest()}.json"
         with open(file=f"{cls.PATH_MIGRATION}/{file_name}", mode='w') as f:

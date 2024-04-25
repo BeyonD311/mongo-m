@@ -46,35 +46,21 @@ async def create_migration():
 
 async def main():
     FileMigration.create_migration_catalog()
-    client = connect_to_mongo()
     params = tuple(sys.argv[1:])
-    # module_path = "app/src/app/schemes"
-    # module_path = "utils/schemas/db_schemas_q_service"
+    client = None
     try:
         if params[0] == "--create-migration":
             await create_migration()
         elif params[0] == "--update-migration":
+            client = connect_to_mongo()
             await update_migration(client)
         elif params[0] == "--init":
             create_file_ini()
+    except Exception as e:
+        print(e)
     finally:
-        client.close()
-    # for collection in db_collections:
-    #     if collection.name == "text_queue":
-    #         for field in collection.fields:
-    #             print(collection.name, field.name, field.type)
-    # find_collection = list(filter(lambda x: x.name in {"customer_request"}, db_collections))
-    # query = {
-    #     "$or": [{field.name: {"$exists": False}} for field in find_collection[0].fields]
-    # }
-    # set_field = {field.name for field in find_collection[0].fields}
-    # get_collection = db.get_collection("customer_request").find(query)
-    # for item in get_collection:
-    #     fields = set_field ^ set(item.keys())
-    #     update_fields = {"$set": {field: None for field in fields}}
-    #     db.get_collection("customer_request").update_many(
-    #         query, update_fields
-    #     )
+        if client != None:
+            client.close()
 
 if __name__ == "__main__":
     asyncio.run(main())

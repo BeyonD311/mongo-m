@@ -9,10 +9,11 @@ types = {
     'dict': {},
     'bool': False,
     'float': 0.0,
-    'datetime': datetime.now(),
+    'datetime': datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"),
     'set': set(),
     'tuple': tuple()
 }
+
 
 def get_default_value(typing: str):
     typing = typing.lower()

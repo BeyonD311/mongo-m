@@ -1,3 +1,4 @@
+import datetime
 import os, sys, importlib, inspect
 from pathlib import Path
 from .utils import get_default_value
@@ -6,6 +7,7 @@ __all__ = ["make_module", "inspect_module", "get_module"]
 
 async def make_module(module_path: str):
     path = f"{os.getcwd()}/{module_path}".replace("\\", "/")
+    print(path, os.path.isdir(path))
     if os.path.isdir(path):
         files = make_module_dir(path, module_path)
     else:
@@ -40,8 +42,14 @@ def inspect_module(module) -> dict:
     """
     models = {}
     for name, obj in inspect.getmembers_static(module, inspect.isclass):
+        print(dir(obj))
+        table_name = None
         if '__table_name__' in dir(obj):
-            if obj.__table_name__ in models:
+            table_name = obj.__table_name__
+        elif '__tablename__' in dir(obj):
+            table_name = obj.__tablename__
+        if table_name is not None:
+            if table_name in models:
                 continue
             params = {}
             for values in inspect.signature(obj).parameters.values():
@@ -63,7 +71,9 @@ def inspect_module(module) -> dict:
                     default_value = get_default_value(annotated_types)
                 else:
                     default_value = values.default
+                    if default_value.__class__ is datetime.datetime:
+                        default_value = default_value.strftime("%Y-%m-%d %H:%M:%S.%f")
 
                 params[values.name] = default_value
-            models[obj.__table_name__] = params
+            models[table_name] = params
     return models
