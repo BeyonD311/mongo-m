@@ -45,7 +45,7 @@ def delete_fields(db: Database, collection_name: str, params):
     if params.empty:
         return
     try:
-        db.get_collection(collection_name).update_many({"$or": params.query}, {"$unset": params.fields}, upsert=True)
+        db.get_collection(collection_name).update_many({"$or": params.query}, {"$unset": params.fields})
         print(f"Удаление полей {params.fields}")
     except Exception as e:
         print(e)
@@ -55,7 +55,7 @@ def add_fields(db: Database, collection_name: str, params):
     if params.empty:
         return
     try:
-        db.get_collection(collection_name).update_many({"$or": params.query}, {"$set": params.fields}, upsert=True)
+        db.get_collection(collection_name).update_many({"$or": params.query}, {"$set": params.fields})
         print(f"Добавление полей {params.fields}", sep="\n")
     except Exception as e:
         print(e)

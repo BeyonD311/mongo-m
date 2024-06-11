@@ -24,7 +24,7 @@ def get_read_me():
 
 setup(
     name='mongo_m',
-    version='1.1.4',
+    version='1.1.5',
     description=DESCRIPTION,
     long_description=DESCRIPTION,
     long_description_content_type="text/markdown",
