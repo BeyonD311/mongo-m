@@ -24,9 +24,9 @@ def get_read_me():
 
 setup(
     name='mongo_m',
-    version='1.1.3',
+    version='1.1.5',
     description=DESCRIPTION,
-    long_description=get_read_me(),
+    long_description=DESCRIPTION,
     long_description_content_type="text/markdown",
     author='Dankov Sergey',
     author_email='beyond31@mail.ru',

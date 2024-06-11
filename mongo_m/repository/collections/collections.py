@@ -1,8 +1,8 @@
 from pymongo import MongoClient
-from pymongo.database import Database, Collection
+from pymongo.database import Database
 from .models import Schema
 from .query import get_fields
-from typing import Generator, Generic
+from typing import Generator
 
 __all__ = ["find_collections", "get_fields_collections"]
 
@@ -20,4 +20,3 @@ def get_fields_collections(db: Database) -> Generator[Schema, None, None]:
         collection_data = Schema(name=collection_name)
         [collection_data.fields.add(batch['field']) for batch in batches]
         yield collection_data
-

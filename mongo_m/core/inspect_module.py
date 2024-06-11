@@ -1,11 +1,31 @@
+import os
+import sys
+import importlib
+import inspect
 import datetime
-import os, sys, importlib, inspect
 from pathlib import Path
 from .utils import get_default_value
+from typing import AsyncIterable
 
 __all__ = ["make_module", "inspect_module", "get_module"]
 
-async def make_module(module_path: str):
+
+async def make_module(module_path: str) -> AsyncIterable:
+    """
+    Asynchronously creates a module from the given `module_path`.
+
+    Args:
+        module_path (str): The path to the module.
+
+    Yields:
+        module: The module object.
+
+    Raises:
+        ModuleNotFoundError: If the module cannot be found.
+
+    Returns:
+        None: If the function completes successfully.
+    """
     path = f"{os.getcwd()}/{module_path}".replace("\\", "/")
     print(path, os.path.isdir(path))
     if os.path.isdir(path):
@@ -22,7 +42,18 @@ async def make_module(module_path: str):
             continue
     return
 
+
 def make_module_dir(path: str, module_path: str):
+    """
+    Generate a list of module names based on the files in the given directory.
+
+    Args:
+        path (str): The path to the directory.
+        module_path (str): The module path.
+
+    Returns:
+        list: A list of module names.
+    """
     path_module = Path(path)
     module_path = module_path.replace("/", ".")
     result = []
@@ -31,10 +62,19 @@ def make_module_dir(path: str, module_path: str):
         result.append(module)
     return result
 
+
 def get_module(module_path: str):
+    """
+    This function imports a module if it is not already in sys.modules.
+    Args:
+        module_path (str): The path of the module to be imported.
+    Returns:
+        The imported module.
+    """
     if module_path in sys.modules:
         return sys.modules[module_path]
     return importlib.import_module(module_path)
+
 
 def inspect_module(module) -> dict:
     """

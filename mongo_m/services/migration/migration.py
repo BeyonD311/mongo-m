@@ -1,4 +1,4 @@
-import pymongo, logging
+import pymongo
 from pymongo.database import Database
 from mongo_m.core import MongoDB, get_config
 from mongo_m.repository import collections
@@ -44,22 +44,22 @@ def get_database(client: pymongo.MongoClient):
 def delete_fields(db: Database, collection_name: str, params):
     if params.empty:
         return
-    collections = db.get_collection(collection_name)
     try:
-        collections.update_many({"$or": params.query}, {"$unset": params.fields}, upsert=True)
+        db.get_collection(collection_name).update_many({"$or": params.query}, {"$unset": params.fields})
         print(f"Удаление полей {params.fields}")
     except Exception as e:
         print(e)
 
+
 def add_fields(db: Database, collection_name: str, params):
     if params.empty:
         return
-    collections = db.get_collection(collection_name)
     try:
-        collections.update_many({"$or": params.query}, {"$set": params.fields}, upsert=True)
+        db.get_collection(collection_name).update_many({"$or": params.query}, {"$set": params.fields})
         print(f"Добавление полей {params.fields}", sep="\n")
     except Exception as e:
         print(e)
+
 
 def screening_fields(client: pymongo.MongoClient):
     """
